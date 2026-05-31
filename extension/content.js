@@ -336,6 +336,12 @@
       if (ogImage) image = ogImage.getAttribute('content');
       if (ogUrl) url = ogUrl.getAttribute('content');
 
+      console.log("[OmniTrack] Single product page identified.", {
+        url,
+        ogTitle: title,
+        ogImage: image
+      });
+
       // 1. Try highly specific product details page (PDP) price selectors first to avoid matching header cart elements
       let priceVal = null;
       let pdpPriceEl = doc.querySelector('[data-testid="product-price"], [data-testid*="product-price"], [data-test-id="product-price"], [data-testid*="pdp-price"]');
@@ -357,6 +363,11 @@
 
       if (pdpPriceEl) {
         priceVal = getCleanPriceFromElement(pdpPriceEl);
+        console.log("[OmniTrack] Selected DOM price element:", {
+          outerHTML: pdpPriceEl.outerHTML.substring(0, 200),
+          textContent: pdpPriceEl.textContent.trim(),
+          parsedVal: priceVal
+        });
       }
       
       // 4. If not found, try targeted price elements
@@ -366,6 +377,10 @@
         );
         if (targetedPrice) {
           priceVal = getCleanPriceFromElement(targetedPrice);
+          console.log("[OmniTrack] Selected targeted DOM price element:", {
+            outerHTML: targetedPrice.outerHTML.substring(0, 200),
+            parsedVal: priceVal
+          });
         }
       }
       
@@ -374,6 +389,10 @@
         const priceMeta = doc.querySelector('meta[property="product:price:amount"], meta[property="og:price:amount"], [itemprop="price"]');
         if (priceMeta) {
           priceVal = cleanPrice(priceMeta.getAttribute('content') || priceMeta.textContent);
+          console.log("[OmniTrack] Selected price from meta tag:", {
+            outerHTML: priceMeta.outerHTML.substring(0, 200),
+            parsedVal: priceVal
+          });
         }
       }
       
@@ -387,15 +406,21 @@
 
       if (title && title.length > 3 && !/shopping cart|your bag/i.test(title)) {
         if (image && !image.includes('unsplash.com')) {
-          list.push({
+          const productPayload = {
             title,
             price,
             url: cleanProductUrl(url, targetStore),
             image: resolveUrl(image),
             store: targetStore
-          });
+          };
+          console.log("[OmniTrack] Successfully extracted product details:", productPayload);
+          list.push(productPayload);
           return list; // Exits early! Returns ONLY this single main product!
+        } else {
+          console.warn("[OmniTrack] Product skipped because of missing or generic Unsplash image:", { title, image });
         }
+      } else {
+        console.warn("[OmniTrack] Product skipped because of invalid title structure:", { title });
       }
     }
 
