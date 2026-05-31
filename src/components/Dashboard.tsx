@@ -165,6 +165,7 @@ export default function Dashboard() {
 
   // Drawer Alert edit state
   const [drawerAlertPrice, setDrawerAlertPrice] = useState<string>('');
+  const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
 
   // ==========================================
   // BACKEND REST SYNC EFFECTS
@@ -1398,29 +1399,88 @@ export default function Dashboard() {
                     <RefreshCw size={10} style={{ animation: 'spin-slow 6s linear infinite' }} />
                     Aggregated check: {selectedProduct.lastChecked}
                   </p>
-                  <a
-                    href={getSearchOnPlatformUrl(selectedProduct)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.35rem',
-                      marginTop: '0.75rem',
-                      padding: '0.35rem 0.75rem',
-                      fontSize: '0.75rem',
-                      background: 'rgba(124, 58, 237, 0.08)',
-                      color: 'var(--color-primary)',
-                      border: '1px solid rgba(124, 58, 237, 0.15)',
-                      textDecoration: 'none',
-                      fontWeight: 600,
-                      borderRadius: '6px'
-                    }}
+                  <div
+                    style={{ position: 'relative', display: 'inline-block', marginTop: '0.75rem' }}
+                    onMouseEnter={() => setIsSearchDropdownOpen(true)}
+                    onMouseLeave={() => setIsSearchDropdownOpen(false)}
                   >
-                    <Search size={12} />
-                    Search on {selectedProduct.store}
-                  </a>
+                    <button
+                      type="button"
+                      className="btn"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                        padding: '0.35rem 0.75rem',
+                        fontSize: '0.75rem',
+                        background: 'rgba(124, 58, 237, 0.08)',
+                        color: 'var(--color-primary)',
+                        border: '1px solid rgba(124, 58, 237, 0.15)',
+                        fontWeight: 600,
+                        borderRadius: '6px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <Search size={12} />
+                      Compare on Platforms
+                      <ChevronDown size={10} style={{ marginLeft: '0.15rem', transition: 'transform 0.2s', transform: isSearchDropdownOpen ? 'rotate(180deg)' : 'none' }} />
+                    </button>
+                    {isSearchDropdownOpen && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '100%',
+                          left: 0,
+                          marginTop: '0.35rem',
+                          background: '#ffffff',
+                          border: '1px solid var(--border-light)',
+                          borderRadius: '8px',
+                          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                          zIndex: 50,
+                          minWidth: '175px',
+                          padding: '0.35rem 0',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.15rem'
+                        }}
+                      >
+                        <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', padding: '0.25rem 0.75rem' }}>
+                          Compare Prices on:
+                        </span>
+                        {['Zalando', 'BSTN', 'HHV', 'END', 'Asphaltgold']
+                          .filter(store => store.toLowerCase() !== selectedProduct.store.toLowerCase())
+                          .map(storeName => (
+                            <a
+                              key={storeName}
+                              href={getSearchOnPlatformUrl(selectedProduct, storeName)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.35rem',
+                                padding: '0.35rem 0.75rem',
+                                fontSize: '0.75rem',
+                                color: 'var(--text-secondary)',
+                                textDecoration: 'none',
+                                transition: 'background 0.15s, color 0.15s'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'var(--color-primary-glow)';
+                                e.currentTarget.style.color = 'var(--color-primary)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'none';
+                                e.currentTarget.style.color = 'var(--text-secondary)';
+                              }}
+                            >
+                              <Globe size={10} />
+                              Search on {storeName}
+                            </a>
+                          ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
