@@ -336,17 +336,30 @@
       if (ogImage) image = ogImage.getAttribute('content');
       if (ogUrl) url = ogUrl.getAttribute('content');
 
-      // 1. Try to find the visible price container on the page (so we can strip original strike-through prices cleanly)
+      // 1. Try highly specific product details page (PDP) price selectors first to avoid matching header cart elements
       let priceVal = null;
-      const visiblePriceContainer = doc.querySelector(
-        '.price, [class*="price-container"], [class*="PriceContainer"], [class*="Price__price"], [class*="price__price"], [class*="ProductPrice"], [data-testid*="price"], [data-test-id*="price"], [data-testid*="Price"]'
-      );
+      let pdpPriceEl = doc.querySelector('[data-testid="product-price"], [data-testid*="product-price"], [data-test-id="product-price"], [data-testid*="pdp-price"]');
       
-      if (visiblePriceContainer) {
-        priceVal = getCleanPriceFromElement(visiblePriceContainer);
+      // 2. Try to find price element near the product title/main pdp container
+      if (!pdpPriceEl) {
+        const pdpTitle = doc.querySelector('[data-testid="productTitle"], h1[class*="title"], h1[class*="Title"], .product-title, .pdp-title');
+        if (pdpTitle && pdpTitle.parentElement) {
+          pdpPriceEl = pdpTitle.parentElement.querySelector('[data-testid*="price"], [class*="price"], [class*="Price"]');
+        }
       }
       
-      // 2. If not found, try targeted price elements
+      // 3. Fall back to standard price selectors
+      if (!pdpPriceEl) {
+        pdpPriceEl = doc.querySelector(
+          '.price, [class*="price-container"], [class*="PriceContainer"], [class*="Price__price"], [class*="price__price"], [class*="ProductPrice"], [data-testid*="price"], [data-test-id*="price"], [data-testid*="Price"]'
+        );
+      }
+
+      if (pdpPriceEl) {
+        priceVal = getCleanPriceFromElement(pdpPriceEl);
+      }
+      
+      // 4. If not found, try targeted price elements
       if (priceVal === null) {
         const targetedPrice = doc.querySelector(
           '[class*="sale-price"], [class*="SalePrice"], [class*="special-price"], [class*="SpecialPrice"], [class*="current-price"], [class*="CurrentPrice"], [class*="activePrice"], [class*="active-price"]'
@@ -356,7 +369,7 @@
         }
       }
       
-      // 3. Fall back to meta tags
+      // 5. Fall back to meta tags
       if (priceVal === null) {
         const priceMeta = doc.querySelector('meta[property="product:price:amount"], meta[property="og:price:amount"], [itemprop="price"]');
         if (priceMeta) {
@@ -845,9 +858,24 @@
       if (priceMeta) {
         price = cleanPrice(priceMeta.getAttribute('content') || priceMeta.textContent);
       } else {
-        const genericPrice = doc.querySelector('.price, [class*="price-amount"], [class*="current-price"], [data-testid*="price"], [data-test-id*="price"], [data-testid*="Price"]');
-        if (genericPrice) {
-          price = cleanPrice(genericPrice.textContent);
+        // 1. Try highly specific PDP price selectors first
+        let pdpPriceEl = doc.querySelector('[data-testid="product-price"], [data-testid*="product-price"], [data-test-id="product-price"], [data-testid*="pdp-price"]');
+        
+        // 2. Try to find price element near the product title
+        if (!pdpPriceEl) {
+          const pdpTitle = doc.querySelector('[data-testid="productTitle"], h1[class*="title"], h1[class*="Title"], .product-title, .pdp-title');
+          if (pdpTitle && pdpTitle.parentElement) {
+            pdpPriceEl = pdpTitle.parentElement.querySelector('[data-testid*="price"], [class*="price"], [class*="Price"]');
+          }
+        }
+        
+        // 3. Fall back to standard price selectors
+        if (!pdpPriceEl) {
+          pdpPriceEl = doc.querySelector('.price, [class*="price-amount"], [class*="current-price"], [data-testid*="price"], [data-test-id*="price"], [data-testid*="Price"]');
+        }
+
+        if (pdpPriceEl) {
+          price = cleanPrice(pdpPriceEl.textContent);
         }
       }
 
