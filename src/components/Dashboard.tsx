@@ -26,7 +26,7 @@ const getSearchOnPlatformUrl = (product: Product | null, targetStoreName?: strin
   query = query.replace(/\b(?:size|eu|uk|us)\b.*/gi, '').trim();
 
   const encodedQuery = encodeURIComponent(query);
-  const storeLower = product.store.toLowerCase();
+  const storeLower = (targetStoreName || product.store).toLowerCase();
 
   if (storeLower.includes('zalando')) {
     return `https://en.zalando.de/men/?q=${encodedQuery}`;
@@ -40,7 +40,7 @@ const getSearchOnPlatformUrl = (product: Product | null, targetStoreName?: strin
     return `https://www.asphaltgold.com/en/search?q=${encodedQuery}&type=product`;
   }
 
-  return `https://www.google.com/search?q=${encodeURIComponent(product.store + ' ' + query)}`;
+  return `https://www.google.com/search?q=${encodeURIComponent((targetStoreName || product.store) + ' ' + query)}`;
 };
 
 interface Toast {
