@@ -327,7 +327,7 @@
       // 1. Try to find the visible price container on the page (so we can strip original strike-through prices cleanly)
       let priceVal = null;
       const visiblePriceContainer = doc.querySelector(
-        '.price, [class*="price-container"], [class*="PriceContainer"], [class*="Price__price"], [class*="price__price"], [class*="ProductPrice"]'
+        '.price, [class*="price-container"], [class*="PriceContainer"], [class*="Price__price"], [class*="price__price"], [class*="ProductPrice"], [data-testid*="price"], [data-test-id*="price"], [data-testid*="Price"]'
       );
       
       if (visiblePriceContainer) {
@@ -832,7 +832,7 @@
       if (priceMeta) {
         price = cleanPrice(priceMeta.getAttribute('content') || priceMeta.textContent);
       } else {
-        const genericPrice = doc.querySelector('.price, [class*="price-amount"], [class*="current-price"]');
+        const genericPrice = doc.querySelector('.price, [class*="price-amount"], [class*="current-price"], [data-testid*="price"], [data-test-id*="price"], [data-testid*="Price"]');
         if (genericPrice) {
           price = cleanPrice(genericPrice.textContent);
         }
