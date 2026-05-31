@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "OmniTrack Sync Companion",
+  "version": "1.0.3",
+  "description": "Securely extracts retail cart and wishlist item variables to sync them directly to your OmniTrack Price Tracker.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://*.zalando.de/*",
+    "https://*.zalando.com/*",
+    "https://*.bstn.com/*",
+    "https://*.hhv.de/*",
+    "https://*.endclothing.com/*",
+    "http://localhost:5001/*",
+    "http://127.0.0.1:5001/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.zalando.de/*",
+        "https://*.zalando.com/*",
+        "https://*.bstn.com/*",
+        "https://*.hhv.de/*",
+        "https://*.endclothing.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
