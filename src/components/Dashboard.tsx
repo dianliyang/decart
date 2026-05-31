@@ -8,7 +8,7 @@ import AddProductModal from './AddProductModal';
 import Navbar from './Navbar';
 
 // Helper to build search URL on respective shopping platforms
-const getSearchOnPlatformUrl = (product: Product | null) => {
+const getSearchOnPlatformUrl = (product: Product | null, targetStoreName?: string) => {
   if (!product) return '#';
   // Clean size and extra details from title to form a concise search query
   let query = product.title
