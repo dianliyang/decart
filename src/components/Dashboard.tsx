@@ -112,7 +112,7 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [storeFilter, setStoreFilter] = useState<string>('All');
   const [categoryFilter, setCategoryFilter] = useState<'All' | CategoryName>('All');
-  const [sortOption, setSortOption] = useState<'default' | 'price-low' | 'price-high' | 'discount' | 'alphabetical'>('default');
+  const [sortOption, setSortOption] = useState<'default' | 'price-low' | 'price-high' | 'discount' | 'alphabetical'>('alphabetical');
 
   // Add Shopping Website form inputs
   const [siteNameInput, setSiteNameInput] = useState('');
@@ -1001,7 +1001,7 @@ export default function Dashboard() {
                             setSearchQuery('');
                             setStoreFilter('All');
                             setCategoryFilter('All');
-                            setSortOption('default');
+                            setSortOption('alphabetical');
                           }}
                         >
                           Reset Dashboard
