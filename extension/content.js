@@ -54,7 +54,8 @@
       '[class*="original"], [class*="old"], [class*="retail"], [class*="lineThrough"], ' +
       '[class*="was"], [class*="Was"], [class*="strike"], [class*="Strike"], ' +
       '[data-testid*="was"], [data-testid*="Was"], [data-test-id*="was"], [data-test-id*="Was"], ' +
-      '[data-testid*="original"], [data-testid*="old"], [data-test-id*="original"], [data-test-id*="old"]'
+      '[data-testid*="original"], [data-testid*="old"], [data-test-id*="original"], [data-test-id*="old"], ' +
+      '[class*="regular"], .regular, [class*="discount"], .discount'
     );
     struckElements.forEach(el => el.remove());
 
@@ -344,7 +345,7 @@
 
       // 1. Try highly specific product details page (PDP) price selectors first to avoid matching header cart elements
       let priceVal = null;
-      let pdpPriceEl = doc.querySelector('[data-testid="product-price"], [data-testid*="product-price"], [data-test-id="product-price"], [data-testid*="pdp-price"]');
+      let pdpPriceEl = doc.querySelector('[data-testid="product-price"], [data-testid*="product-price"], [data-test-id="product-price"], [data-testid*="pdp-price"], [data-highlight-name*="Price"], [class*="items--detail--price"], .items--detail--price--base-component');
       
       // 2. Try to find price element near the product title/main pdp container
       if (!pdpPriceEl) {
@@ -397,6 +398,20 @@
       }
       
       price = priceVal;
+
+      if (!title) {
+        // Try custom DOM scraper for HHV details page headline (contains brand inside class upper, and name inside class lower)
+        const hhvHeadline = doc.querySelector('[data-highlight-name="Items::Detail::Headline"] h1');
+        if (hhvHeadline) {
+          const brand = hhvHeadline.querySelector('.upper')?.textContent.trim() || '';
+          const name = hhvHeadline.querySelector('.lower')?.textContent.trim() || '';
+          if (brand && name) {
+            title = `${brand} - ${name}`;
+          } else {
+            title = hhvHeadline.textContent.trim();
+          }
+        }
+      }
 
       if (!title) {
         title = doc.title.split('|')[0].split('-')[0].trim();
@@ -884,7 +899,7 @@
         price = cleanPrice(priceMeta.getAttribute('content') || priceMeta.textContent);
       } else {
         // 1. Try highly specific PDP price selectors first
-        let pdpPriceEl = doc.querySelector('[data-testid="product-price"], [data-testid*="product-price"], [data-test-id="product-price"], [data-testid*="pdp-price"]');
+        let pdpPriceEl = doc.querySelector('[data-testid="product-price"], [data-testid*="product-price"], [data-test-id="product-price"], [data-testid*="pdp-price"], [data-highlight-name*="Price"], [class*="items--detail--price"], .items--detail--price--base-component');
         
         // 2. Try to find price element near the product title
         if (!pdpPriceEl) {
@@ -901,6 +916,20 @@
 
         if (pdpPriceEl) {
           price = cleanPrice(pdpPriceEl.textContent);
+        }
+      }
+
+      if (!title) {
+        // Try custom DOM scraper for HHV details page headline (contains brand inside class upper, and name inside class lower)
+        const hhvHeadline = doc.querySelector('[data-highlight-name="Items::Detail::Headline"] h1');
+        if (hhvHeadline) {
+          const brand = hhvHeadline.querySelector('.upper')?.textContent.trim() || '';
+          const name = hhvHeadline.querySelector('.lower')?.textContent.trim() || '';
+          if (brand && name) {
+            title = `${brand} - ${name}`;
+          } else {
+            title = hhvHeadline.textContent.trim();
+          }
         }
       }
 
