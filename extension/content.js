@@ -531,6 +531,13 @@
     const isSuggestionItem = (el) => {
       if (!el || !el.closest) return false;
       
+      // If the item resides inside a primary user collection or wishlist container, bypass suggestion rejection
+      if (
+        el.closest('[class*="wishlist"], [id*="wishlist"], [data-testid*="wishlist"], [class*="wardrobe"], [class*="liked"], [class*="owned"], [class*="bag"], [class*="cart"], [class*="CoastBag"]')
+      ) {
+        return false;
+      }
+      
       const suggestKeywords = [
         'reco', 'recommend', 'similar', 'carousel', 'bought', 'viewed', 
         'sponsored', 'related', 'upsell', 'cross-sell', 'crosssell', 

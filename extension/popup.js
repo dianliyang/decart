@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const introText = document.getElementById('intro-text');
   const itemList = document.getElementById('item-list');
   const btnScan = document.getElementById('btn-scan');
-  const btnSync = document.getElementById('btn-sync');
   const btnCopy = document.getElementById('btn-copy');
 
   let activeTab = null;
@@ -38,7 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         storeBadge.style.borderColor = 'rgba(239, 68, 68, 0.15)';
         introText.textContent = 'To sync items, navigate to an active cart or product page on Zalando, BSTN, HHV, END, or Asphaltgold.';
       } else {
-        introText.textContent = `Active retailer detected: ${detectedStore}. Navigate to your cart, wishlist, or a product page, and click Scan.`;
+        introText.textContent = `Active retailer detected: ${detectedStore}. Navigate to your cart, wishlist, or a product page, and click Scan & Sync.`;
       }
     }
   } catch (err) {
@@ -46,11 +45,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     storeBadge.textContent = 'Ready';
   }
 
-  // 2. Scan active page DOM
+  // 2. Scan active page DOM and Sync immediately
   btnScan.addEventListener('click', async () => {
     if (!activeTab) return;
+    
+    // Prevent double clicking by disabling action button immediately
     btnScan.disabled = true;
-    btnScan.querySelector('span').textContent = 'Scanning Tab...';
+    btnScan.style.opacity = '0.7';
+    btnScan.querySelector('span').textContent = 'Scanning page...';
 
     try {
       // Inject content script to extract DOM items
@@ -69,111 +71,94 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (scrapedData.length > 0) {
           renderItems(scrapedData);
-          btnSync.style.display = 'flex';
-          btnSync.removeAttribute('disabled');
-          btnCopy.style.display = 'flex';
-          btnCopy.removeAttribute('disabled');
+          btnScan.querySelector('span').textContent = 'Syncing to tracker...';
+          
+          // Offload network sync to service worker to bypass CSP/CORS
+          chrome.runtime.sendMessage(
+            { action: 'OMNITRACK_SYNC_TO_BACKEND', payload: scrapedData },
+            async (response) => {
+              if (chrome.runtime.lastError || !response || !response.success) {
+                const errorMsg = response ? response.error : 'Network sync failed';
+                console.error('Direct sync failed:', errorMsg);
+                alert('Sync failed: ' + (errorMsg || 'Connection timeout'));
+                
+                btnScan.disabled = false;
+                btnScan.style.opacity = '';
+                btnScan.querySelector('span').textContent = 'Scan & Sync to Dashboard';
+                return;
+              }
+
+              console.log('Sync to SQLite backend succeeded:', response.data);
+              btnCopy.style.display = 'flex';
+              btnCopy.removeAttribute('disabled');
+
+              try {
+                // Focus dashboard and notify UI
+                const dashboardTabs = await chrome.tabs.query({ url: ["*://localhost:*/*", "*://127.0.0.1:*/*"] });
+                if (dashboardTabs && dashboardTabs.length > 0) {
+                  await chrome.scripting.executeScript({
+                    target: { tabId: dashboardTabs[0].id },
+                    func: (syncedItems) => {
+                      const event = new CustomEvent('OMNITRACK_SYNC_ITEMS', { detail: syncedItems });
+                      window.dispatchEvent(event);
+                    },
+                    args: [scrapedData]
+                  });
+
+                  await chrome.tabs.update(dashboardTabs[0].id, { active: true });
+                  await chrome.windows.update(dashboardTabs[0].windowId, { drawAttention: true, focused: true });
+                }
+              } catch (tabErr) {
+                console.warn('Dashboard focus skipped:', tabErr);
+              }
+
+              // Success animation
+              btnScan.querySelector('span').textContent = 'Synced successfully!';
+              btnScan.style.background = 'var(--color-emerald)';
+              btnScan.style.color = '#ffffff';
+
+              setTimeout(() => {
+                btnScan.querySelector('span').textContent = 'Scan & Sync to Dashboard';
+                btnScan.disabled = false;
+                btnScan.style.opacity = '';
+                btnScan.style.background = '';
+                btnScan.style.color = '';
+              }, 3000);
+            }
+          );
         } else {
           itemList.innerHTML = `
             <div class="empty-state">
               <svg width="24" height="24" fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
               <span style="color: #ef4444">No items discovered</span>
-              <p style="font-size: 0.65rem; color: var(--text-secondary); margin-top: 0.25rem;">Navigate directly to your cart page or an item details page and scan again.</p>
+              <p style="font-size: 0.65rem; color: var(--text-secondary); margin-top: 0.25rem;">Navigate to your cart, wishlist, or a product page, and try again.</p>
             </div>
           `;
-          btnSync.style.display = 'none';
-          btnSync.setAttribute('disabled', 'true');
           btnCopy.style.display = 'none';
           btnCopy.setAttribute('disabled', 'true');
+          
+          btnScan.querySelector('span').textContent = 'Scan & Sync to Dashboard';
+          btnScan.disabled = false;
+          btnScan.style.opacity = '';
         }
+      } else {
+        throw new Error('Empty script response');
       }
     } catch (err) {
-      console.error('Scrape execution failed:', err);
+      console.error('Scan failed:', err);
       itemList.innerHTML = `
         <div class="empty-state">
           <span style="color: #ef4444">Extension Error</span>
-          <p style="font-size: 0.65rem; color: var(--text-secondary); margin-top: 0.25rem;">Make sure you are not on a chrome:// page and have developer tools allowed.</p>
+          <p style="font-size: 0.65rem; color: var(--text-secondary); margin-top: 0.25rem;">Please make sure you are not on a protected chrome:// page.</p>
         </div>
       `;
-    } finally {
+      btnScan.querySelector('span').textContent = 'Scan & Sync to Dashboard';
       btnScan.disabled = false;
-      btnScan.querySelector('span').textContent = 'Rescan Current Cart';
+      btnScan.style.opacity = '';
     }
   });
 
-  // 3. Direct Sync to Backend and Dashboard Tab
-  btnSync.addEventListener('click', async () => {
-    if (!scrapedData || scrapedData.length === 0) return;
-    btnSync.disabled = true;
-    btnSync.querySelector('span').textContent = 'Syncing...';
-
-    // Offload network sync to the background service worker to prevent popup CSP/CORS blocks
-    chrome.runtime.sendMessage(
-      { action: 'OMNITRACK_SYNC_TO_BACKEND', payload: scrapedData },
-      async (response) => {
-        if (chrome.runtime.lastError) {
-          console.error('Runtime error during background sync:', chrome.runtime.lastError);
-          alert('Sync failed: Extension connection lost. Please reload the extension at chrome://extensions.');
-          btnSync.disabled = false;
-          btnSync.querySelector('span').textContent = 'Sync directly to Dashboard';
-          return;
-        }
-
-        if (!response || !response.success) {
-          const errorMsg = response ? response.error : 'Network connection timed out';
-          console.error('Background sync failed:', errorMsg);
-          alert('Sync failed: ' + errorMsg);
-          btnSync.disabled = false;
-          btnSync.querySelector('span').textContent = 'Sync directly to Dashboard';
-          return;
-        }
-
-        console.log('Sync to backend succeeded via service worker:', response.data);
-
-        try {
-          // Also attempt to find dashboard tab running on localhost to trigger instant UI update and focus it
-          const dashboardTabs = await chrome.tabs.query({ url: ["*://localhost:*/*", "*://127.0.0.1:*/*"] });
-          
-          if (dashboardTabs && dashboardTabs.length > 0) {
-            try {
-              // Inject a short script into the dashboard tab that dispatches our custom sync event on window!
-              await chrome.scripting.executeScript({
-                target: { tabId: dashboardTabs[0].id },
-                func: (syncedItems) => {
-                  const event = new CustomEvent('OMNITRACK_SYNC_ITEMS', { detail: syncedItems });
-                  window.dispatchEvent(event);
-                },
-                args: [scrapedData]
-              });
-
-              // Bring the dashboard tab window to the front focus to show results!
-              await chrome.tabs.update(dashboardTabs[0].id, { active: true });
-              await chrome.windows.update(dashboardTabs[0].windowId, { drawAttention: true, focused: true });
-            } catch (tabErr) {
-              console.warn('Tab notification skipped, backend sync was successful:', tabErr);
-            }
-          }
-        } catch (tabsErr) {
-          console.warn('Tab queries failed, sync was still successful:', tabsErr);
-        }
-
-        // Show successful sync in popup
-        const syncSpan = btnSync.querySelector('span');
-        syncSpan.textContent = 'Synced successfully!';
-        btnSync.style.background = 'var(--color-emerald)';
-        btnSync.style.color = '#ffffff';
-
-        setTimeout(() => {
-          syncSpan.textContent = 'Sync directly to Dashboard';
-          btnSync.disabled = false;
-          btnSync.style.background = '';
-          btnSync.style.color = '';
-        }, 3000);
-      }
-    );
-  });
-
-  // 4. Backup clipboard copy
+  // 3. Backup clipboard copy
   btnCopy.addEventListener('click', () => {
     if (!scrapedData || scrapedData.length === 0) return;
 
