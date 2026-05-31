@@ -1,6 +1,6 @@
 # OmniTrack // Premium Price Tracker & Aggregator
 
-OmniTrack is a state-of-the-art e-commerce aggregator, price-tracking pipeline, and wardrobe cataloging application. Specially designed for sneakerheads, audiophiles, and fashion enthusiasts, it automatically aggregates products from leading platforms (like Zalando, End, BSTN, and HHV) using a Manifest V3 Chrome Companion extension, analyzes pricing patterns, and dynamically categorizes items using advanced heuristics.
+OmniTrack is a state-of-the-art e-commerce aggregator, price-tracking pipeline, and wardrobe cataloging application. Specially designed for sneakerheads, audiophiles, and fashion enthusiasts, it automatically aggregates products from leading platforms (like Zalando, End, BSTN, HHV, and Asphaltgold) using a Manifest V3 Chrome Companion extension, analyzes pricing patterns, and dynamically categorizes items using advanced heuristics.
 
 ---
 

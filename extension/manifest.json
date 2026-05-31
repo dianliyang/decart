@@ -14,6 +14,8 @@
     "https://*.bstn.com/*",
     "https://*.hhv.de/*",
     "https://*.endclothing.com/*",
+    "https://*.asphaltgold.com/*",
+    "https://*.asphaltgold.de/*",
     "http://localhost:5001/*",
     "http://127.0.0.1:5001/*",
     "http://localhost/*",
@@ -29,7 +31,9 @@
         "https://*.zalando.com/*",
         "https://*.bstn.com/*",
         "https://*.hhv.de/*",
-        "https://*.endclothing.com/*"
+        "https://*.endclothing.com/*",
+        "https://*.asphaltgold.com/*",
+        "https://*.asphaltgold.de/*"
       ],
       "js": ["content.js"],
       "run_at": "document_end"

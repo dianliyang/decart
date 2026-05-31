@@ -515,12 +515,13 @@ export default function Dashboard() {
         if (/bstn/i.test(line)) store = 'BSTN';
         else if (/hhv/i.test(line)) store = 'HHV';
         else if (/end/i.test(line)) store = 'End';
+        else if (/asphalt/i.test(line)) store = 'Asphaltgold';
 
         // 3. Clean Title
         let title = line
           .replace(/(?:[€$£]|EUR|GBP|USD)/gi, '')
           .replace(/\b\d+(?:[.,]\d{2})?\b/g, '')
-          .replace(/\b(zalando|bstn|hhv|end|clothing)\b/gi, '')
+          .replace(/\b(zalando|bstn|hhv|end|clothing|asphalt|asphaltgold)\b/gi, '')
           .replace(/[-|:,]/g, '')
           .trim();
 
@@ -1192,7 +1193,7 @@ export default function Dashboard() {
                           {scanStep === 3 && 'Syncing e-commerce schemas...'}
                         </h4>
                         <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                          {scanStep === 1 && 'Checking active Zalando, BSTN, HHV, and End sessions.'}
+                          {scanStep === 1 && 'Checking active Zalando, BSTN, HHV, End, and Asphaltgold sessions.'}
                           {scanStep === 2 && 'Retrieving products from your active carts.'}
                           {scanStep === 3 && 'Injecting price history nodes and asset preview nodes.'}
                         </p>
@@ -1284,7 +1285,7 @@ export default function Dashboard() {
                     <li>Toggle the <strong>"Developer mode"</strong> switch in the top right corner.</li>
                     <li>Click the <strong>"Load unpacked"</strong> button in the top left.</li>
                     <li>Select the <strong><code>extension</code></strong> folder located inside your project workspace (<code>/Users/wagagaha/vibe/decart/extension</code>).</li>
-                    <li>Navigate to your active cart page on Zalando, BSTN, HHV, or End.</li>
+                    <li>Navigate to your active cart page on Zalando, BSTN, HHV, End, or Asphaltgold.</li>
                     <li>Click our extension icon in your Chrome toolbar, hit <strong>"Scan Current Cart"</strong>, copy the sync payload, and paste it directly into the clipboard importer box above!</li>
                   </ol>
                 </div>

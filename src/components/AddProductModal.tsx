@@ -130,7 +130,7 @@ export default function AddProductModal({ isOpen, onClose, onAddProduct, sites }
 
         <div className="modal-header">
           <h2>Add New URL to Tracker</h2>
-          <p>Paste any product link from Zalando, End, BSTN, or HHV to instantly retrieve catalog data and activate price tracking.</p>
+          <p>Paste any product link from Zalando, End, BSTN, HHV, or Asphaltgold to instantly retrieve catalog data and activate price tracking.</p>
         </div>
 
         {!scrapedData && !loading && (

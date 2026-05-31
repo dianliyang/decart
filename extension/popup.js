@@ -27,6 +27,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         detectedStore = 'HHV';
       } else if (host.includes('endclothing')) {
         detectedStore = 'END';
+      } else if (host.includes('asphaltgold')) {
+        detectedStore = 'Asphaltgold';
       }
 
       storeBadge.textContent = detectedStore;
@@ -34,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         storeBadge.style.background = 'rgba(239, 68, 68, 0.08)';
         storeBadge.style.color = '#ef4444';
         storeBadge.style.borderColor = 'rgba(239, 68, 68, 0.15)';
-        introText.textContent = 'To sync items, navigate to an active cart or product page on Zalando, BSTN, HHV, or END.';
+        introText.textContent = 'To sync items, navigate to an active cart or product page on Zalando, BSTN, HHV, END, or Asphaltgold.';
       } else {
         introText.textContent = `Active retailer detected: ${detectedStore}. Navigate to your cart, wishlist, or a product page, and click Scan.`;
       }

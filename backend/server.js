@@ -49,6 +49,15 @@ const INITIAL_SITES = [
     isActive: true,
     addedAt: 'May 15, 2026',
     description: 'Unique boutique combining vinyl records, underground hip-hop releases, and curated classic streetwear.'
+  },
+  {
+    id: 'site-5',
+    name: 'Asphaltgold',
+    domain: 'asphaltgold.com',
+    logoColor: '#8b5cf6',
+    isActive: true,
+    addedAt: 'May 31, 2026',
+    description: 'Premier German sneaker and streetwear destination offering highly curated footwear releases and apparel collections.'
   }
 ];
 
@@ -59,41 +68,95 @@ let db = {
 };
 
 function resolveCategory(title, url = '') {
-  const text = `${title} ${url}`.toLowerCase();
+  let t = `${title} ${url}`.toLowerCase();
   
-  if (/(?:vinyl|record|music|lp|album|singles?|ep|turntable|cassette|cd|soundtrack)/i.test(text)) {
-    return 'Vinyl & Music';
+  // Clean brand names to prevent false positive keyword matches
+  t = t.replace("polo ralph lauren", "");
+  t = t.replace("nudie jeans", "");
+  t = t.replace("calvin klein jeans", "");
+  t = t.replace("levi's", "");
+  t = t.replace("levis", "");
+
+  const scores = {
+    "Sneakers": 0,
+    "Vinyl & Music": 0,
+    "Hats & Beanies": 0,
+    "Jackets": 0,
+    "Pants & Jeans": 0,
+    "Shirts": 0,
+    "Accessories": 0,
+    "Clothing": 1 // Base fallback score
+  };
+
+  // --- 1. SNEAKERS SCORE ---
+  if (/\b\d{2}(?:\s+\d\/\d)?\s*\|\s*/.test(t)) {
+    scores["Sneakers"] += 15; // Extremely strong signal (size tag in title)
   }
-  
-  if (/(?:hat|caps?|beanies?|scarfs?|gloves?|keychains?|backpacks?|totes?|watches?|jewelry|rings?|necklaces?|bracelets?|umbrellas?)/i.test(text)) {
-    return 'Hats & Beanies';
+  const sneakerKeywords = ["sneaker", "shoe", "boot", "slide", "sandal", "clog", "footwear", "trainer", "samba", "2002r", "xt-6", "x-alp", "verto alpine", "birkenstock", "keen", "crocs", "slip-on", "pegasus", "agravic", "cell geo", "salomon", "vomero", "wallabee", "lace-ups", "lace-up", "runner", "running", "gazelle", "dunk", "jordan", "yeezy", "clarks", "timberland", "dr. martens", "dr martens", "1461", "mayfare", "sala", "xt-quest", "adios", "adizero", "sylan", "xt-4", "1300", "chuck 70", "u992gy"];
+  for (const kw of sneakerKeywords) {
+    if (t.includes(kw)) scores["Sneakers"] += 5;
   }
-  
-  if (/(?:jacket|coats?|windbreakers?|track\s*tops?|blazers?|parkas?|trench|bombers?)/i.test(text)) {
-    return 'Jackets';
+
+  // --- 2. VINYL & MUSIC SCORE ---
+  if (t.includes("vinyl") || t.includes("record") || t.includes(" lp") || t.endsWith(" lp") || t.includes("2xlp") || t.includes("album") || t.includes("ep") || t.includes("cassette") || t.includes(" cd")) {
+    scores["Vinyl & Music"] += 10;
   }
-  
-  if (/(?:shirts?|t-shirts?|tees?|polos?|crews?|pullovers?)/i.test(text)) {
-    return 'Shirts';
+  if (t.includes("mf doom") || t.includes("mm..food")) {
+    scores["Vinyl & Music"] += 12;
   }
-  
-  if (/(?:pants?|jeans|denim|trousers?|shorts?|joggers?|cargos?)/i.test(text)) {
-    return 'Pants & Jeans';
+
+  // --- 3. HATS & BEANIES SCORE ---
+  const hatKeywords = ["cap", "hat", "beanie", "bandana", "balaclava", "foulard", "bucket hat", "bonnet", "clean up", "tieband", "headband", "headscarf", "visor", "snapback"];
+  for (const kw of hatKeywords) {
+    if (t.includes(kw)) scores["Hats & Beanies"] += 8;
   }
-  
-  if (/(?:socks?|bags?|accessories?|sunglasses|glasses|wallets?|belts?)/i.test(text)) {
-    return 'Accessories';
+
+  // --- 4. JACKETS SCORE ---
+  const jacketKeywords = ["jacket", "track top", "anthem jacket", "windbreaker", "anorak", "parka", "coat", "vest", "helium down", "hood jacket", "mountain light", "hardshell", "alpha jacket", "freelight polartec", "alpha™ hood", "blazer", "bomber", "raincoat", "cardigan", "windcheater", "overcoat"];
+  for (const kw of jacketKeywords) {
+    if (t.includes(kw)) scores["Jackets"] += 8;
   }
-  
-  if (/(?:vests?|hoodies?|sweatshirts?|fleece|knit|sweaters?|cardigans?|suits?|underwears?|sweats?)/i.test(text)) {
-    return 'Clothing';
+
+  // --- 5. PANTS & JEANS SCORE ---
+  const pantsKeywords = ["pants", "jorts", "shorts", "short", "sweatshort", "trousers", "bottoms", "baggies", "cargo", "chino", "jogger", "sweatpants", "single knee", "double knee", "pant", "trouser", "trousers", "leggings", "tights", "jeans"];
+  for (const kw of pantsKeywords) {
+    if (t.includes(kw)) scores["Pants & Jeans"] += 8;
   }
-  
-  if (/(?:sneakers?|shoes?|boots?|runners?|trainers?|sandals?|slides?|clogs?|mules?|slip-on|loafers?|derby|oxfords?|sambas?|gazelles?|dunks?|jordans?)/i.test(text)) {
-    return 'Sneakers';
+
+  // --- 6. SHIRTS SCORE ---
+  const shirtKeywords = ["shirt", "tee", "t-shirt", "polo", "sweatshirt", "hoodie", "knit", "jersey", "top", "pullover", "crewneck", "long sleeve", "longsleeve", "tank", "tshirt", "t-shirt", "sweat", "fleece", "hood"];
+  for (const kw of shirtKeywords) {
+    if (t.includes(kw)) scores["Shirts"] += 7;
   }
-  
-  return 'Sneakers';
+
+  // --- 7. ACCESSORIES SCORE ---
+  const accessoryKeywords = ["bag", "backpack", "socks", "sock", "belt", "wallet", "keychain", "sunglasses", "scarf", "gloves", "umbrella", "watch", "bottle", "accessories", "daypack", "rucksack", "neckwarmer", "snood", "sweatband", "totebag", "tote bag"];
+  for (const kw of accessoryKeywords) {
+    if (t.includes(kw)) scores["Accessories"] += 8;
+  }
+
+  // Deduct/Clean cross-contamination
+  const hasShirtKeyword = t.includes("shirt") || t.includes("tee") || t.includes("t-shirt") || t.includes("polo") || t.includes("sweatshirt") || t.includes("hoodie") || t.includes("pullover") || t.includes("crewneck");
+  if (hasShirtKeyword) {
+    scores["Pants & Jeans"] = 0;
+    scores["Sneakers"] = 0;
+    scores["Vinyl & Music"] = 0;
+  }
+  if (t.includes("socks") || t.includes("sock") || t.includes("bag") || t.includes("backpack") || t.includes("cap") || t.includes("hat")) {
+    scores["Sneakers"] = 0;
+  }
+
+  // Find category with highest score
+  let maxScore = -1;
+  let bestCategory = "Clothing";
+  for (const cat in scores) {
+    if (scores[cat] > maxScore) {
+      maxScore = scores[cat];
+      bestCategory = cat;
+    }
+  }
+
+  return bestCategory;
 }
 
 // Load database from file system

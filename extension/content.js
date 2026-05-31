@@ -284,6 +284,7 @@
   if (hostname.includes('bstn')) store = 'BSTN';
   else if (hostname.includes('hhv')) store = 'HHV';
   else if (hostname.includes('endclothing')) store = 'END';
+  else if (hostname.includes('asphaltgold')) store = 'Asphaltgold';
 
   // Helper to extract items from a given HTML Document
   function extractFromDocument(doc, targetStore) {
@@ -470,6 +471,21 @@
         '.cart-item-row',
         '.cart-table-row',
         '.item-row',
+        'article'
+      ];
+    } else if (targetStore === 'Asphaltgold') {
+      itemSelectors = [
+        '[class*="product-card"]',
+        '[class*="ProductCard"]',
+        '[class*="product-grid-item"]',
+        '[class*="ProductGridItem"]',
+        '[class*="product-item"]',
+        '[class*="ProductItem"]',
+        '.product-card',
+        '.product-grid-item',
+        '.product-item',
+        '.cart-item',
+        '.cart-item-row',
         'article'
       ];
     }

@@ -66,6 +66,15 @@ export const INITIAL_SITES: ShoppingSite[] = [
     isActive: true,
     addedAt: 'May 15, 2026',
     description: 'Unique boutique combining vinyl records, underground hip-hop releases, and curated classic streetwear.'
+  },
+  {
+    id: 'site-5',
+    name: 'Asphaltgold',
+    domain: 'asphaltgold.com',
+    logoColor: '#8b5cf6',
+    isActive: true,
+    addedAt: 'May 31, 2026',
+    description: 'Premier German sneaker and streetwear destination offering highly curated footwear releases and apparel collections.'
   }
 ];
 
