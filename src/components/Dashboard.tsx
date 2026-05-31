@@ -7,6 +7,42 @@ import PriceChart from './PriceChart';
 import AddProductModal from './AddProductModal';
 import Navbar from './Navbar';
 
+// Helper to build search URL on respective shopping platforms
+const getSearchOnPlatformUrl = (product: Product | null) => {
+  if (!product) return '#';
+  // Clean size and extra details from title to form a concise search query
+  let query = product.title
+    .split(' - ')[0] // e.g. "Birkenstock 1774 - London..." -> "Birkenstock 1774"
+    .split(' | ')[0]
+    .replace(/-\s*\d+(?:\s*[.,]\s*\d+)*\b/g, '') // remove trailing size indicators like "- 42"
+    .trim();
+
+  // If split got too short, fall back to title without brackets or size pipes
+  if (query.length < 5) {
+    query = product.title.split('|')[0].trim();
+  }
+  
+  // Also strip generic tags or size suffixes
+  query = query.replace(/\b(?:size|eu|uk|us)\b.*/gi, '').trim();
+
+  const encodedQuery = encodeURIComponent(query);
+  const storeLower = product.store.toLowerCase();
+
+  if (storeLower.includes('zalando')) {
+    return `https://en.zalando.de/men/?q=${encodedQuery}`;
+  } else if (storeLower.includes('hhv')) {
+    return `https://www.hhv.de/en/clothing/catalog/filter/search-N3S11?term=${encodedQuery}`;
+  } else if (storeLower.includes('bstn')) {
+    return `https://www.bstn.com/eu_de/catalogsearch/result?q=${encodedQuery}&categories=Men`;
+  } else if (storeLower.includes('end')) {
+    return `https://www.endclothing.com/en-de/catalogsearch/results?q=${encodedQuery}`;
+  } else if (storeLower.includes('asphaltgold')) {
+    return `https://www.asphaltgold.com/en/search?q=${encodedQuery}&type=product`;
+  }
+
+  return `https://www.google.com/search?q=${encodeURIComponent(product.store + ' ' + query)}`;
+};
+
 interface Toast {
   id: string;
   title: string;
@@ -1362,6 +1398,29 @@ export default function Dashboard() {
                     <RefreshCw size={10} style={{ animation: 'spin-slow 6s linear infinite' }} />
                     Aggregated check: {selectedProduct.lastChecked}
                   </p>
+                  <a
+                    href={getSearchOnPlatformUrl(selectedProduct)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      marginTop: '0.75rem',
+                      padding: '0.35rem 0.75rem',
+                      fontSize: '0.75rem',
+                      background: 'rgba(124, 58, 237, 0.08)',
+                      color: 'var(--color-primary)',
+                      border: '1px solid rgba(124, 58, 237, 0.15)',
+                      textDecoration: 'none',
+                      fontWeight: 600,
+                      borderRadius: '6px'
+                    }}
+                  >
+                    <Search size={12} />
+                    Search on {selectedProduct.store}
+                  </a>
                 </div>
               </div>
 
