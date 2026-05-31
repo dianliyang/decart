@@ -163,9 +163,19 @@ export default function Dashboard() {
   const [clipboardInput, setClipboardInput] = useState('');
   const [clipboardLoading, setClipboardLoading] = useState(false);
 
-  // Drawer Alert edit state
   const [drawerAlertPrice, setDrawerAlertPrice] = useState<string>('');
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
+  const searchDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchDropdownRef.current && !searchDropdownRef.current.contains(event.target as Node)) {
+        setIsSearchDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // ==========================================
   // BACKEND REST SYNC EFFECTS
@@ -1400,9 +1410,8 @@ export default function Dashboard() {
                     Aggregated check: {selectedProduct.lastChecked}
                   </p>
                   <div
+                    ref={searchDropdownRef}
                     style={{ position: 'relative', display: 'inline-block', marginTop: '0.75rem' }}
-                    onMouseEnter={() => setIsSearchDropdownOpen(true)}
-                    onMouseLeave={() => setIsSearchDropdownOpen(false)}
                   >
                     <button
                       type="button"
@@ -1420,6 +1429,7 @@ export default function Dashboard() {
                         borderRadius: '6px',
                         cursor: 'pointer'
                       }}
+                      onClick={() => setIsSearchDropdownOpen(!isSearchDropdownOpen)}
                     >
                       <Search size={12} />
                       Compare on Platforms
@@ -1465,6 +1475,7 @@ export default function Dashboard() {
                                 textDecoration: 'none',
                                 transition: 'background 0.15s, color 0.15s'
                               }}
+                              onClick={() => setIsSearchDropdownOpen(false)}
                               onMouseEnter={(e) => {
                                 e.currentTarget.style.background = 'var(--color-primary-glow)';
                                 e.currentTarget.style.color = 'var(--color-primary)';
