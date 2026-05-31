@@ -5,6 +5,9 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Install native compilation dependencies for SQLite on Alpine
+RUN apk add --no-cache python3 make g++ gcc build-base
+
 # Copy dependency manifests
 COPY package*.json ./
 

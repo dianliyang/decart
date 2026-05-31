@@ -1,0 +1,7 @@
+node_modules
+omnitrack.db
+omnitrack.db-journal
+omnitrack.db-wal
+omnitrack.db-shm
+*.bak
+*.db

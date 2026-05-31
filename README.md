@@ -44,7 +44,7 @@ Retail items (especially limited-edition streetwear or vintage vinyl) frequently
 
 ## 🛠️ Technology Stack
 - **Frontend**: React 19, Vite, TypeScript, Lucide Icons, Custom Premium HSL CSS (no generic templates).
-- **Backend**: Node.js, Express, Lowdb JSON storage (active db state is git-ignored via `backend/db.json` and isolated locally).
+- **Backend**: Node.js, Express, SQLite relational storage (active db state is git-ignored via `backend/omnitrack.db` and isolated locally).
 - **Companion**: Manifest V3 Chrome Extension.
 - **Deployment**: Multi-stage lightweight Docker containers (Frontend uses an optimized Nginx build; Backend runs Node 20-alpine).
 
@@ -107,7 +107,7 @@ The Vite development server will spin up on `http://localhost:5173` or `http://l
 │   ├── Dockerfile         # Dockerized backend build
 │   ├── package.json       # Express service dependencies
 │   ├── server.js          # REST API server (classification, sync controller)
-│   └── db.json            # Local JSON database (git-ignored)
+│   └── omnitrack.db       # Local SQLite relational database (git-ignored)
 ├── extension/
 │   ├── manifest.json      # Extension V3 definitions
 │   ├── content.js         # Content crawler (strips carousels, maps tab URL)

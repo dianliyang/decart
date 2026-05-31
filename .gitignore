@@ -25,3 +25,10 @@ dist-ssr
 
 # Local Database
 backend/db.json
+backend/db.json.bak
+backend/omnitrack.db
+backend/omnitrack.db-journal
+backend/omnitrack.db-wal
+backend/omnitrack.db-shm
+*.db
+*.sqlite
