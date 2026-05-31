@@ -312,7 +312,7 @@
     if (isSingleProductPage) {
       // Prioritize extracting the single main product of the page!
       let title = '';
-      let price = 100.00;
+      let price = null;
       let image = '';
       let url = window.location.href;
 
@@ -325,7 +325,7 @@
       if (ogUrl) url = ogUrl.getAttribute('content');
 
       // 1. Try to find the visible price container on the page (so we can strip original strike-through prices cleanly)
-      let priceVal = 0;
+      let priceVal = null;
       const visiblePriceContainer = doc.querySelector(
         '.price, [class*="price-container"], [class*="PriceContainer"], [class*="Price__price"], [class*="price__price"], [class*="ProductPrice"]'
       );
@@ -335,7 +335,7 @@
       }
       
       // 2. If not found, try targeted price elements
-      if (!priceVal || priceVal === 100.00) {
+      if (priceVal === null) {
         const targetedPrice = doc.querySelector(
           '[class*="sale-price"], [class*="SalePrice"], [class*="special-price"], [class*="SpecialPrice"], [class*="current-price"], [class*="CurrentPrice"], [class*="activePrice"], [class*="active-price"]'
         );
@@ -345,14 +345,14 @@
       }
       
       // 3. Fall back to meta tags
-      if (!priceVal || priceVal === 100.00) {
+      if (priceVal === null) {
         const priceMeta = doc.querySelector('meta[property="product:price:amount"], meta[property="og:price:amount"], [itemprop="price"]');
         if (priceMeta) {
           priceVal = cleanPrice(priceMeta.getAttribute('content') || priceMeta.textContent);
         }
       }
       
-      price = priceVal || 100.00;
+      price = priceVal;
 
       if (!title) {
         title = doc.title.split('|')[0].split('-')[0].trim();
@@ -816,7 +816,7 @@
     // 3. Fallback: If it's a single product detail view page rather than a cart grid
     if (list.length === 0) {
       let title = '';
-      let price = 100.00;
+      let price = null;
       let image = '';
       let url = window.location.href;
 
