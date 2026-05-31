@@ -300,7 +300,19 @@
         if (urlObj.searchParams.get('omnitrack_sync') === 'true') {
           return true;
         }
-        // Standard single product detail page url patterns
+
+        // 1. Precise DOM indicators for e-commerce detail pages
+        if (
+          doc.querySelector('meta[property="og:type"][content*="product"]') ||
+          doc.querySelector('[data-testid="productTitle"]') ||
+          doc.querySelector('[data-testid="pdp-promo-banner"]') ||
+          doc.querySelector('[data-testid="size-region-select"]') ||
+          doc.querySelector('.pdp-details, [class*="ProductDetail"], [class*="product-detail"]')
+        ) {
+          return true;
+        }
+
+        // 2. Standard single product detail page url patterns
         const path = window.location.pathname.toLowerCase();
         return (path.includes('.html') || path.includes('/p/') || path.includes('/product/') || path.includes('/item/')) && 
                !path.includes('wishlist') && !path.includes('cart') && !path.includes('bag') && !path.includes('your-boards') && !path.includes('wardrobe') && !path.includes('lists');
@@ -403,7 +415,8 @@
       itemSelectors = [
         '[data-testid="wishlist-item"]',
         '[data-testid="product-item"]',
-        '[data-testid*="product"]',
+        '[data-testid*="product-card"]',
+        '[data-testid*="product-tile"]',
         '[class*="WishlistItem"]',
         '[class*="wishlist-item"]',
         '[class*="WishlistCard"]',
